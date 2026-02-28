@@ -17,6 +17,7 @@ import {
 
 export default function Footer() {
   const pathname = usePathname();
+  // Ocultamos el footer en la página de búsqueda para mantener la experiencia full-screen
   if (pathname === '/properties') return null;
 
   const navyBg = '#0f172a';
@@ -68,8 +69,7 @@ export default function Footer() {
             <Stack gap={12}>
               {[
                 { label: 'Inicio', href: '/' },
-                { label: 'Comprar', href: '/properties' },
-                { label: 'Alquilar', href: '/properties' },
+                { label: 'Propiedades', href: '/properties' },
                 { label: 'Emprendimientos', href: '/properties' },
               ].map(({ label, href }) => (
                 <Anchor key={label} component={Link} href={href} underline="never" c="gray.4"

@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   Box,
@@ -13,52 +15,12 @@ import {
   TextInput,
   ActionIcon,
   Anchor,
+  Badge,
 } from '@mantine/core';
+import { FEATURED } from '@/data/properties';
 
 const PRIMARY = '#1A3C5E';
 const SECONDARY = '#C8923A';
-
-const FEATURED_PROPERTIES = [
-  {
-    id: 1,
-    title: 'Casa Minimalista en La Rinconada',
-    location: 'Yerba Buena, Tucumán',
-    price: 'USD 320.000',
-    arsPrice: 'ARS 384.000.000',
-    type: 'Venta',
-    beds: 3,
-    baths: 2,
-    area: '210m²',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAaFu8pMNwOURprODSVAmkebWPuWlDF_FNwCsroho48bfiOfPCH7XZ6bfLyD6iu7tJ-TgJhvCV0UG3g4kgZ7HIr0McV8a0HVham4Qpe0cD7PAMX5vofUNmI05HJreAtqXODaD-Pbhhjherphg-E4-z2EzxaPyLDFrHJE4jDfUYpfe2oIILL4KWlYi7RnzjrnElE_oMYOuQ5uvz4eF7FM5h8TLm3qGDYedKTxdAgb5ZKvg-elwMUobPl6MQBPgs34zk6JbbhnoJv9zPf',
-    badgeColor: SECONDARY,
-  },
-  {
-    id: 2,
-    title: 'Departamento Premium Centro',
-    location: 'Barrio Norte, Tucumán',
-    price: 'USD 800 /mes',
-    arsPrice: 'ARS 960.000',
-    type: 'Alquiler',
-    beds: 2,
-    baths: 2,
-    area: '95m²',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBqeqyutnFvNVEO7lFUcATEZaTZWWVuvBSpflSeHm8sQvCLoOLeAkNNJGj8tctPcWWaxIOt-dNOV3-2a1tZOZwBNvkQi4PMkpNofroKAksc35ayFbFGaKuQKWTJwHf4yxkEDqwewsSkCqQ9y08dLc_IibQqRdXD2YN2nNjQUBlGT4VP0PqdjIrFE5AOekaiUqdq8LqhCpqG07UsBzhCx6u1XxH9BxF0-0gyJH6uNEgxBPl-6H7bk1dbMH908S2zEnx_koN1fKapmIjl',
-    badgeColor: PRIMARY,
-  },
-  {
-    id: 3,
-    title: 'Casa en Country Las Yungas',
-    location: 'Yerba Buena, Tucumán',
-    price: 'USD 450.000',
-    arsPrice: 'ARS 540.000.000',
-    type: 'Venta',
-    beds: 4,
-    baths: 3,
-    area: '320m²',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCuyGwEDPRWdJ9WxZUKGu3ZrD00MHRn8Mv8WdSe-SvJ6QlSkG-ZCFbiduWP90kFpkY5LMK-lOHV6qbIsTsD8TE6IJjXSHaSP5HrDd9ePtoKs8KfJl8QxWayTAuKFhOjMEpHYnoerC4zsOg0qI87KOIYYJjkNDoMmrGFur_2unthY6orEq4Ei9s6C-5c_g_CGKelKnj8iiCw1smWp5uTYF4J8pII7qRqCMG5Ec4E-tImQppz9KAN3M71Cao6RR6oHUQRMIxhrv631TMQ',
-    badgeColor: SECONDARY,
-  },
-];
 
 const TRUST_BADGES = [
   { icon: 'verified_user', title: '100% Verificadas', desc: 'Revisión legal completa de cada propiedad.' },
@@ -86,17 +48,28 @@ function PropertyCard({ prop }) {
         <Box
           style={{
             position: 'absolute', top: 12, left: 12, zIndex: 1,
-            backgroundColor: prop.badgeColor, color: 'white',
+            backgroundColor: prop.operation === 'Venta' ? SECONDARY : PRIMARY, color: 'white',
             fontSize: 11, fontWeight: 700, letterSpacing: '0.05em',
             padding: '3px 8px', borderRadius: 4, textTransform: 'uppercase',
           }}
         >
-          {prop.type}
+          {prop.operation}
         </Box>
+        <Badge
+          size="xs"
+          variant="white"
+          style={{
+            position: 'absolute', top: 12, right: 48, zIndex: 1,
+            backgroundColor: 'rgba(255,255,255,0.9)', color: '#334155',
+          }}
+          radius="sm"
+        >
+          {prop.type}
+        </Badge>
         <Box
           style={{
             width: '100%', height: '100%',
-            backgroundImage: `url('${prop.image}')`,
+            backgroundImage: `url('${prop.img}')`,
             backgroundSize: 'cover', backgroundPosition: 'center',
           }}
         />
@@ -115,16 +88,26 @@ function PropertyCard({ prop }) {
         </Group>
         <Group justify="space-between" mt="md" pt="md" style={{ borderTop: '1px solid #f3f4f6' }}>
           <Stack gap={2}>
-            <Text fw={700} size="xl" c="dark">{prop.price}</Text>
-            <Text size="xs" c="dimmed">{prop.arsPrice}</Text>
+            <Text fw={700} size="xl" c="dark">{prop.priceLabel}</Text>
+            <Text size="xs" c="dimmed">{prop.arsLabel}</Text>
           </Stack>
           <Group gap={12}>
-            {[['bed', prop.beds], ['bathtub', prop.baths], ['square_foot', prop.area]].map(([icon, val]) => (
-              <Group key={icon} gap={4}>
-                <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>{icon}</span>
-                <Text size="xs" c="dimmed">{val}</Text>
+            {prop.bedrooms > 0 && (
+              <Group gap={4}>
+                <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>bed</span>
+                <Text size="xs" c="dimmed">{prop.bedrooms}</Text>
               </Group>
-            ))}
+            )}
+            {prop.bathrooms > 0 && (
+              <Group gap={4}>
+                <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>bathtub</span>
+                <Text size="xs" c="dimmed">{prop.bathrooms}</Text>
+              </Group>
+            )}
+            <Group gap={4}>
+              <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>square_foot</span>
+              <Text size="xs" c="dimmed">{prop.area} m²</Text>
+            </Group>
           </Group>
         </Group>
       </Box>
@@ -254,7 +237,7 @@ export default function Home() {
             </Anchor>
           </Group>
           <Grid gutter="xl">
-            {FEATURED_PROPERTIES.map((prop) => (
+            {FEATURED.map((prop) => (
               <Grid.Col key={prop.id} span={{ base: 12, sm: 6, lg: 4 }}>
                 <PropertyCard prop={prop} />
               </Grid.Col>
@@ -265,7 +248,7 @@ export default function Home() {
 
       {/* WhatsApp FAB */}
       <Box
-        component="a" href="#" aria-label="Contactar por WhatsApp"
+        component="a" href="https://wa.me/5493814123456?text=Hola%2C%20me%20interesa%20conocer%20m%C3%A1s%20propiedades" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp"
         style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 50,
           display: 'flex', alignItems: 'center', justifyContent: 'center',

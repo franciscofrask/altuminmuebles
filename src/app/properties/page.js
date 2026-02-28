@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   Box,
   Container,
@@ -18,16 +19,13 @@ import {
   ActionIcon,
   Anchor,
   Divider,
+  Badge,
 } from '@mantine/core';
-
-const PRIMARY = '#1A3C5E';
-const SECONDARY = '#C8923A';
-
-const PROPERTY_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAaFu8pMNwOURprODSVAmkebWPuWlDF_FNwCsroho48bfiOfPCH7XZ6bfLyD6iu7tJ-TgJhvCV0UG3g4kgZ7HIr0McV8a0HVham4Qpe0cD7PAMX5vofUNmI05HJreAtqXODaD-Pbhhjherphg-E4-z2EzxaPyLDFrHJE4jDfUYpfe2oIILL4KWlYi7RnzjrnElE_oMYOuQ5uvz4eF7FM5h8TLm3qGDYedKTxdAgb5ZKvg-elwMUobPl6MQBPgs34zk6JbbhnoJv9zPf';
+import { PROPERTIES } from '@/data/properties';
 
 export default function Properties() {
   return (
-    <Box style={{ display: 'flex', minHeight: '100vh' }}>
+    <Box style={{ display: 'flex', minHeight: 'calc(100vh - 80px)', alignItems: 'flex-start' }}>
       {/* Sidebar */}
       <Box
         component="aside"
@@ -39,6 +37,9 @@ export default function Properties() {
           backgroundColor: 'white',
           padding: 24,
           overflowY: 'auto',
+          height: 'calc(100vh - 80px)',
+          position: 'sticky',
+          top: 80,
         }}
       >
         <Group justify="space-between" mb="lg">
@@ -53,10 +54,18 @@ export default function Properties() {
           <Box>
             <Text fw={700} size="sm" mb="sm">Operación</Text>
             <Stack gap="xs">
-              <Radio label="Comprar" name="operation" defaultChecked
-                styles={{ radio: { borderColor: PRIMARY, '&:checked': { backgroundColor: PRIMARY } } }}
+              <Radio
+                label="Venta"
+                name="operation"
+                checked={operation === 'Venta'}
+                onChange={() => setOperation('Venta')}
+                styles={{ radio: { borderColor: PRIMARY } }}
               />
-              <Radio label="Alquilar" name="operation"
+              <Radio
+                label="Alquiler"
+                name="operation"
+                checked={operation === 'Alquiler'}
+                onChange={() => setOperation('Alquiler')}
                 styles={{ radio: { borderColor: PRIMARY } }}
               />
             </Stack>
@@ -129,9 +138,9 @@ export default function Properties() {
           <Group justify="space-between" align="flex-end" mb="xl" wrap="wrap" gap="md">
             <Stack gap={4}>
               <Title order={1} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, color: '#0f172a' }}>
-                Propiedades en Venta
+                Propiedades en {operation}
               </Title>
-              <Text size="sm" c="dimmed">124 resultados encontrados en Yerba Buena</Text>
+              <Text size="sm" c="dimmed">{filtered.length} resultados en toda Argentina</Text>
             </Stack>
             <Group gap="md">
               <Button
@@ -146,7 +155,8 @@ export default function Properties() {
               </Button>
               <Select
                 data={['Más recientes', 'Menor precio', 'Mayor precio']}
-                defaultValue="Más recientes"
+                value={sort}
+                onChange={setSort}
                 size="sm"
                 radius="md"
                 style={{ width: 160 }}
@@ -156,11 +166,11 @@ export default function Properties() {
 
           {/* Property Grid */}
           <Grid gutter="lg">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Grid.Col key={i} span={{ base: 12, sm: 6, xl: 4 }}>
+            {filtered.map((prop) => (
+              <Grid.Col key={prop.id} span={{ base: 12, sm: 6, xl: 4 }}>
                 <Box
                   component={Link}
-                  href={`/property/${i}`}
+                  href={`/property/${prop.id}`}
                   style={{
                     display: 'block',
                     textDecoration: 'none',
@@ -176,17 +186,26 @@ export default function Properties() {
                     <Box
                       style={{
                         position: 'absolute', top: 12, left: 12, zIndex: 1,
-                        backgroundColor: SECONDARY, color: 'white',
+                        backgroundColor: prop.operation === 'Venta' ? SECONDARY : PRIMARY, color: 'white',
                         fontSize: 11, fontWeight: 700, letterSpacing: '0.05em',
                         padding: '3px 8px', borderRadius: 4, textTransform: 'uppercase',
                       }}
                     >
-                      Venta
+                      {prop.operation}
                     </Box>
+                    {prop.featured && (
+                      <Badge
+                        size="xs"
+                        style={{ position: 'absolute', top: 12, left: prop.operation.length * 8 + 32, zIndex: 1, backgroundColor: '#f59e0b', color: 'white' }}
+                        radius="sm"
+                      >
+                        Destacado
+                      </Badge>
+                    )}
                     <Box
                       style={{
                         width: '100%', height: '100%',
-                        backgroundImage: `url('${PROPERTY_IMAGE}')`,
+                        backgroundImage: `url('${prop.img}')`,
                         backgroundSize: 'cover', backgroundPosition: 'center',
                       }}
                     />
@@ -198,25 +217,38 @@ export default function Properties() {
                     </ActionIcon>
                   </Box>
                   <Box p="md">
-                    <Text fw={700} size="lg" c="dark" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      Casa Minimalista en La Rinconada
+                    <Badge size="xs" variant="light" color="gray" radius="sm" mb={6}>{prop.type}</Badge>
+                    <Text fw={700} size="md" c="dark" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {prop.title}
                     </Text>
                     <Group gap={4} mt={4}>
                       <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#6b7280' }}>location_on</span>
-                      <Text size="sm" c="dimmed">Yerba Buena, Tucumán</Text>
+                      <Text size="sm" c="dimmed" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {prop.location}
+                      </Text>
                     </Group>
                     <Group justify="space-between" mt="md" pt="md" style={{ borderTop: '1px solid #f3f4f6' }}>
                       <Stack gap={2}>
-                        <Text fw={700} size="xl" c="dark">USD 320.000</Text>
-                        <Text size="xs" c="dimmed">ARS 384.000.000</Text>
+                        <Text fw={700} size="xl" c="dark">{prop.priceLabel}</Text>
+                        <Text size="xs" c="dimmed">{prop.arsLabel}</Text>
                       </Stack>
                       <Group gap={12}>
-                        {[['bed', 3], ['bathtub', 2], ['square_foot', '210m²']].map(([icon, val]) => (
-                          <Group key={icon} gap={4}>
-                            <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>{icon}</span>
-                            <Text size="xs" c="dimmed">{val}</Text>
+                        {prop.bedrooms > 0 && (
+                          <Group gap={4}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>bed</span>
+                            <Text size="xs" c="dimmed">{prop.bedrooms}</Text>
                           </Group>
-                        ))}
+                        )}
+                        {prop.bathrooms > 0 && (
+                          <Group gap={4}>
+                            <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>bathtub</span>
+                            <Text size="xs" c="dimmed">{prop.bathrooms}</Text>
+                          </Group>
+                        )}
+                        <Group gap={4}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 15, color: '#9ca3af' }}>square_foot</span>
+                          <Text size="xs" c="dimmed">{prop.area} m²</Text>
+                        </Group>
                       </Group>
                     </Group>
                   </Box>
