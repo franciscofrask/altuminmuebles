@@ -23,7 +23,20 @@ import {
 } from '@mantine/core';
 import { PROPERTIES } from '@/data/properties';
 
+const PRIMARY = '#1A3C5E';
+const SECONDARY = '#C8923A';
+
 export default function Properties() {
+  const [operation, setOperation] = useState('Venta');
+  const [sort, setSort] = useState('relevance');
+
+  const filtered = PROPERTIES.filter((p) => p.operation === operation).sort((a, b) => {
+    if (sort === 'price_asc') return a.price - b.price;
+    if (sort === 'price_desc') return b.price - a.price;
+    if (sort === 'area_desc') return b.area - a.area;
+    return b.featured - a.featured;
+  });
+
   return (
     <Box style={{ display: 'flex', minHeight: 'calc(100vh - 80px)', alignItems: 'flex-start' }}>
       {/* Sidebar */}

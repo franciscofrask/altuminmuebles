@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -244,7 +244,7 @@ function PropertyCard({ property, isActive, onHover }) {
   );
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const city = searchParams.get('city') || '';
 
@@ -471,5 +471,26 @@ export default function SearchPage() {
         />
       </Box>
     </Box>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <Box
+          style={{
+            display: 'flex',
+            height: 'calc(100vh - 80px)',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text c="dimmed">Cargando búsqueda…</Text>
+        </Box>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   );
 }
